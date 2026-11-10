@@ -21,6 +21,15 @@ const aiRateLimiter = new PerUserRateLimiter({
   durationSec: 60,
 });
 
+/**
+ * `thinking` is a DeepSeek field the OpenAI SDK types don't include. The SDK
+ * still JSON-encodes the body, so the field reaches the API. Thinking is on
+ * by default and billed as output tokens; a short companion reply doesn't need it.
+ */
+type DeepSeekChatRequest = OpenAI.ChatCompletionCreateParamsNonStreaming & {
+  thinking: { type: "disabled" };
+};
+
 const getDeepSeekClient = () => {
   const apiKey = getEnvironmentVariables().deepseek.apiKey;
 
@@ -48,10 +57,12 @@ export const aiService = {
     }
 
     const client = getDeepSeekClient();
-    const completion = await client.chat.completions.create({
+    const request: DeepSeekChatRequest = {
       messages: [{ role: "user", content: prompt }],
-      model: "deepseek-v4-flash",
-    });
+      model: "deepseek-flash",
+      thinking: { type: "disabled" },
+    };
+    const completion = await client.chat.completions.create(request);
 
     return completion?.choices?.[0]?.message?.content ?? null;
   },
