@@ -114,7 +114,7 @@ async function bootstrap() {
   registerFallbackHandlers();
 
   const server = app
-    .listen(port, "0.0.0.0", (error) => {
+    .listen(port, "127.0.0.1", (error) => {
       if (error) {
         console.log("Server error!", error);
       }
